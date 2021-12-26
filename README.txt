@@ -20,6 +20,9 @@ I have modified it further
    - Using 1, 2, 3, 4, 5, 6, 7 and 8 didnt work well with smarties display or the desktop display plugin
      Using 176, 158, 131, 132, 133, 134, 135 and 136 (the actual locations) allows the display to work properly
 
+ - Made an option to have or not a 1px line accross the bottom
+   - The original has this but it means you can't see values of 0 and 1
+
  - Removed a bunch of unused variables and used proper types
    - this just removes all the compiler warnings
 
