@@ -13,6 +13,7 @@ int SPC_Global_AudioInput = 0;
 float SPC_Global_scale = 1.0;
 int SPC_UseWasapi = 1;
 int SPC_Global_BlackChar = 0;
+int SPC_Bottom_Line = 0;
 
 //==============================================================================
 // function to copy a string and set the first newline character to 0
@@ -52,6 +53,7 @@ extern void __stdcall SPC_read_cfg(int callnum)
         SPC_Global_scale = 1.0;
         SPC_UseWasapi = SPC_check_os();
         SPC_Global_BlackChar = 0;
+        SPC_Bottom_Line = 0;
     }
 
     SPC_log(mod, "Started");
@@ -84,6 +86,8 @@ extern void __stdcall SPC_read_cfg(int callnum)
                         sscanf(&line[10], "%d", &SPC_UseWasapi);
                     else if (!strncmp(line, "BlackChar=", 10))
                         sscanf(&line[10], "%d", &SPC_Global_BlackChar);
+                    else if (!strncmp(line, "BottomLine=", 11))
+                        sscanf(&line[11], "%d", &SPC_Bottom_Line);
                     else
                         SPC_log("SCP_Init Error - Line not processed:", line);
                 }
@@ -101,6 +105,8 @@ extern void __stdcall SPC_read_cfg(int callnum)
     sprintf(str, "UseWasapi=%d", SPC_UseWasapi);
     SPC_log(mod, str);
     sprintf(str, "BlackChar=%d", SPC_Global_BlackChar);
+    SPC_log(mod, str);
+    sprintf(str, "BottomLine=%d", SPC_Bottom_Line);
     SPC_log(mod, str);
     SPC_log(mod, "Finished");
 }

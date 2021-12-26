@@ -219,7 +219,7 @@ extern "C" DLLEXPORT char const *__stdcall function1(char *param1, char *param2)
             j = 8;
         if (j < 0)
             j = 0;
-        if ((j == 0) && (line == 1))
+        if ((j == 0) && (line == 1) && (SPC_Bottom_Line != 0))
             j = 1;
         if (j == 0)
             strcpy(str1, " ");

@@ -14,17 +14,17 @@
 	//Standard Version Type
 	static const long SPC_MAJOR  = 1;
 	static const long SPC_MINOR  = 1;
-	static const long SPC_BUILD  = 107;
-	static const long SPC_REVISION  = 602;
+	static const long SPC_BUILD  = 109;
+	static const long SPC_REVISION  = 611;
 	
 	//Miscellaneous Version Types
-	static const long SPC_BUILDS_COUNT  = 140;
-	#define SPC_RC_FILEVERSION 1,1,107,602
-	#define SPC_RC_FILEVERSION_STRING "1, 1, 107, 602\0"
-	static const char SPC_FULLVERSION_STRING [] = "1.1.107.602";
+	static const long SPC_BUILDS_COUNT  = 143;
+	#define SPC_RC_FILEVERSION 1,1,109,611
+	#define SPC_RC_FILEVERSION_STRING "1, 1, 109, 611\0"
+	static const char SPC_FULLVERSION_STRING [] = "1.1.109.611";
 	
 	//These values are to keep track of your versioning state, don't modify them.
-	static const long SPC_BUILD_HISTORY  = 7;
+	static const long SPC_BUILD_HISTORY  = 9;
 	
 
 #endif //VERSION_H
