@@ -36,6 +36,11 @@ extern int SPC_Displaying;
 extern int SPC_UseWasapi;
 extern int SPC_Global_BlackChar;
 extern int SPC_Bottom_Line;
-
+extern int AutoScale;
+extern float MaxScale;
+extern float MinScale;
+extern float UpFactor;
+extern float DownFactor;
+extern int ScaleBar;
 
 extern int SPC_imin, SPC_imax, SPC_fmin, SPC_fmax, SPC_icount, SPC_fcount;

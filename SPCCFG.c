@@ -14,6 +14,12 @@ float SPC_Global_scale = 1.0;
 int SPC_UseWasapi = 1;
 int SPC_Global_BlackChar = 0;
 int SPC_Bottom_Line = 0;
+int AutoScale = 0;
+float MinScale = 0.1;
+float MaxScale = 3.0;
+float UpFactor = 0.01;
+float DownFactor = 0.01;
+int ScaleBar = 0;
 
 //==============================================================================
 // function to copy a string and set the first newline character to 0
@@ -54,6 +60,12 @@ extern void __stdcall SPC_read_cfg(int callnum)
         SPC_UseWasapi = SPC_check_os();
         SPC_Global_BlackChar = 0;
         SPC_Bottom_Line = 0;
+        AutoScale = 0;
+        MinScale = 0.1;
+        MaxScale = 3.0;
+        UpFactor = 0.01;
+        DownFactor = 0.01;
+        ScaleBar = 0;
     }
 
     SPC_log(mod, "Started");
@@ -88,6 +100,24 @@ extern void __stdcall SPC_read_cfg(int callnum)
                         sscanf(&line[10], "%d", &SPC_Global_BlackChar);
                     else if (!strncmp(line, "BottomLine=", 11))
                         sscanf(&line[11], "%d", &SPC_Bottom_Line);
+
+                    else if (!strncmp(line, "AutoScale=", 10))
+                        sscanf(&line[10], "%d", &AutoScale);
+
+                    else if (!strncmp(line, "MaxScale=", 9))
+                        sscanf(&line[9], "%f", &MaxScale);
+
+                    else if (!strncmp(line, "MinScale=", 9))
+                        sscanf(&line[9], "%f", &MinScale);
+
+                    else if (!strncmp(line, "UpFactor=", 9))
+                        sscanf(&line[9], "%f", &UpFactor);
+
+                    else if (!strncmp(line, "DownFactor=", 11))
+                        sscanf(&line[11], "%f", &DownFactor);
+
+                    else if (!strncmp(line, "ScaleBar=", 9))
+                        sscanf(&line[9], "%d", &ScaleBar);
                     else
                         SPC_log("SCP_Init Error - Line not processed:", line);
                 }
@@ -107,6 +137,18 @@ extern void __stdcall SPC_read_cfg(int callnum)
     sprintf(str, "BlackChar=%d", SPC_Global_BlackChar);
     SPC_log(mod, str);
     sprintf(str, "BottomLine=%d", SPC_Bottom_Line);
+    SPC_log(mod, str);
+    sprintf(str, "AutoScale=%d", AutoScale);
+    SPC_log(mod, str);
+    sprintf(str, "MaxScale=%f", MaxScale);
+    SPC_log(mod, str);
+    sprintf(str, "MinScale=%f", MinScale);
+    SPC_log(mod, str);
+    sprintf(str, "UpFactor=%f", UpFactor);
+    SPC_log(mod, str);
+    sprintf(str, "DownFactor=%f", DownFactor);
+    SPC_log(mod, str);
+    sprintf(str, "ScaleBar=%d", ScaleBar);
     SPC_log(mod, str);
     SPC_log(mod, "Finished");
 }

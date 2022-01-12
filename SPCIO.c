@@ -17,7 +17,8 @@ int spectrum_width = MAX_WIDTH,
 int audio_device = (-1);          //
 int spectrum_array[MAX_WIDTH];    // array to hold heights for the display
 int SPC_started = 0;              // Flag indicating that BASS devices have been initialised
-
+float scaleby = 1;
+float ascale=1;
 HRECORD SPC_chan;
 
 //==============================================================================
@@ -176,6 +177,12 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
         SPC_unlock();
     }
 
+    if (AutoScale > 0){
+      scaleby = scaleby + UpFactor;
+    if ( scaleby > MaxScale )
+      scaleby = MaxScale; // cap it
+    }
+
     if (SPC_started == 1)
     {
         for (x = 0; x < 2048; x++)
@@ -184,7 +191,7 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
         if (SPC_UseWasapi == 1) // on Vista or Win7
         {
             BASS_WASAPI_SetDevice(audio_device);                                      // set device context to input/loopback device
-            i = BASS_WASAPI_GetData(fft, BASS_DATA_FFT2048);// | BASS_DATA_FFT_NOWINDOW); // get the FFT data
+            i = BASS_WASAPI_GetData(fft, BASS_DATA_FFT2048| BASS_DATA_FFT_NOWINDOW);// | BASS_DATA_FFT_NOWINDOW); // get the FFT data
         }
         else // on XP or earlier
         {
@@ -221,6 +228,7 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
             int b0 = 0;
             int maxy = 0;
             SPC_lock();
+            ascale=scaleby;
             for (x = 0; x < spectrum_width; x++)
             {
                 float peak = 0;
@@ -232,9 +240,18 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
                 for (; b0 < b1; b0++)
                     if (peak < fft[1 + b0])
                         peak = fft[1 + b0];
-                y = (int)(sqrt(peak) * SPC_Global_scale * 3.0 * (float)(spectrum_height)); // scale it (sqrt to make low values more visible)
-                if (y > spectrum_height)
+
+                y = (int)(sqrt(peak) * SPC_Global_scale * ascale * 3.5 * (float)(spectrum_height)); // scale it (sqrt to make low values more visible)
+                if (y > spectrum_height){
                     y = spectrum_height; // cap it
+                    if (AutoScale > 0){
+                      scaleby = scaleby - DownFactor;
+                      if (scaleby < MinScale)
+                        scaleby = MinScale; // cap it
+                    }
+
+                    }
+
                 if (y < 0)
                     y = 0;
                 spectrum_array[x] = y;
@@ -504,7 +521,7 @@ extern int __stdcall SPC_close()
 extern int __stdcall SPC_get(int *array)
 {
     int i;
-
+    float sbar;
     SPC_last_called = (double)clock() / CLOCKS_PER_SEC; // Counter time
     if (SPC_UseWasapi == 1)
     {
@@ -520,8 +537,15 @@ extern int __stdcall SPC_get(int *array)
         spectrum_timer = timeSetEvent(25, 25, (LPTIMECALLBACK)&SPC_UpdateSpectrum, 0, TIME_PERIODIC);
 
     SPC_lock();
-    for (i = 0; i < spectrum_width; i++)
+    for (i = 0; i < spectrum_width; i++){
         array[i] = spectrum_array[i];
+
+        if (ScaleBar > 0){
+          sbar = (scaleby/(MaxScale - MinScale))*MAX_HEIGHT;
+          array[spectrum_width - 1] = sbar;
+        }
+
+        }
     SPC_unlock();
     return 0;
 }

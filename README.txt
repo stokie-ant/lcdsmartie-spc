@@ -26,8 +26,12 @@ I have modified it further
  - Removed a bunch of unused variables and used proper types
    - this just removes all the compiler warnings
 
+ - Added an auto scaling function to try to keep the analyzer in view
+
+ - Added scale bar to watch autoscaling in action
+
 Buit with codeblocks 32bit and mingw
 Dev-c++ can compile but causes issues with locking code and breaks when optimized
-visual c++ just doesn't work at all. would need quite a time investment to fix
+visual c++ just doesn't work at all. would need a time investment to fix
 
 If there is any issues please report them here
