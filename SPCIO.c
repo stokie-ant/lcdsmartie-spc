@@ -160,8 +160,8 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
     float fmin, fmax;
     double tdiff, end_time;
 
-    // Check if it's been more than 2 seconds since the display routine was called.
-    // If it as then close BASS if it isn't closed already
+    // Check if it's been more than SPC_UNUSED_TIME since the display routine was called.
+    // If it has then close BASS if it isn't closed already
     end_time = (double)clock() / CLOCKS_PER_SEC; // Counter time
     tdiff = end_time - SPC_last_called;          // in seconds
     if ((int)tdiff > SPC_UNUSED_TIME)
@@ -175,6 +175,7 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
         for (x = 0; x < spectrum_width; x++)
             spectrum_array[x] = 0;
         SPC_unlock();
+        return;
     }
 
     if (AutoScale > 0){
@@ -330,7 +331,7 @@ extern int __stdcall SPC_init()
     const char *devname;
 	char name[256];
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < MAX_WIDTH; i++)
         spectrum_array[i] = 0;
     SPC_started = 0;
     audio_device = 0;
