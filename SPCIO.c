@@ -5,8 +5,8 @@
 #include <sys/timeb.h>
 #include <math.h>
 #include "SPC.h"
-#include "bass.h"
-#include "basswasapi.h"
+#include "bass\bass.h"
+#include "bass\basswasapi.h"
 
 int SPC_imin, SPC_imax, SPC_fmin, SPC_fmax, SPC_icount, SPC_fcount;
 
