@@ -526,6 +526,7 @@ extern int __stdcall SPC_get(int *array)
     SPC_last_called = (double)clock() / CLOCKS_PER_SEC; // Counter time
     if (SPC_UseWasapi == 1)
     {
+        // this seems to be always returning 0 which stops the timer callback from being run
         i = BASS_WASAPI_GetData(NULL, BASS_DATA_AVAILABLE);
     }
     else
@@ -534,7 +535,8 @@ extern int __stdcall SPC_get(int *array)
     }
     //    sprintf(str,"%d bytes available",i);
     //    SPC_log("Update2",str);
-    if ((i > 0) && (!spectrum_timer))
+    // don't rely on buffered data being available. It seems to always return 0 on 64bit
+    if (/*(i > 0) &&*/ (!spectrum_timer))
         spectrum_timer = timeSetEvent(25, 25, (LPTIMECALLBACK)&SPC_UpdateSpectrum, 0, TIME_PERIODIC);
 
     SPC_lock();
