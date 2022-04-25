@@ -191,7 +191,7 @@ void CALLBACK SPC_UpdateSpectrum(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD d
        // y1 = 0;
         if (SPC_UseWasapi == 1) // on Vista or Win7
         {
-            BASS_WASAPI_SetDevice(audio_device);                                      // set device context to input/loopback device
+            BASS_WASAPI_SetDevice(audio_device); // set device context to input/loopback device
             i = BASS_WASAPI_GetData(fft, BASS_DATA_FFT2048| BASS_DATA_FFT_NOWINDOW);// | BASS_DATA_FFT_NOWINDOW); // get the FFT data
         }
         else // on XP or earlier
@@ -280,10 +280,10 @@ extern int __stdcall SPC_findloopbackdevice_byname(char* name)
 	int i;
     for (i = 0; BASS_WASAPI_GetDeviceInfo(i, &info); i++)
 	{
-		if((strcmp(name, info.name)==0) && (info.flags & BASS_DEVICE_INPUT) && (info.flags & BASS_DEVICE_LOOPBACK) && (info.flags & BASS_DEVICE_ENABLED))
+		if ((strcmp(name, info.name)==0) && (info.flags & BASS_DEVICE_INPUT) && (info.flags & BASS_DEVICE_LOOPBACK) && (info.flags & BASS_DEVICE_ENABLED))
             return i;
 	}
-	return 0;
+	return -1;
 }
 
 //==============================================================================
@@ -295,13 +295,14 @@ extern int __stdcall SPC_finddefaultdevice(char* name)
 	int i;
 	for (i = 0; BASS_WASAPI_GetDeviceInfo(i, &info); i++)
 	{
-		if ((info.flags & BASS_DEVICE_DEFAULT) && !(info.flags & BASS_DEVICE_INPUT))
+        if ((info.flags & BASS_DEVICE_DEFAULT) && !(info.flags & BASS_DEVICE_INPUT))
 		{
 		    strcpy(name, info.name);
 		    return i;
 		}
     }
-    return 0;
+    strcpy(name, "none");
+    return -1;
 }
 
 //==============================================================================
@@ -315,8 +316,7 @@ extern int __stdcall SPC_isdefaultdevice(int devindex)
 	{
 		return 0;
 	}
-
-	return 1;
+	return -1;
 }
 
 //==============================================================================
@@ -334,22 +334,12 @@ extern int __stdcall SPC_init()
     for (i = 0; i < MAX_WIDTH; i++)
         spectrum_array[i] = 0;
     SPC_started = 0;
-    audio_device = 0;
+
     if (SPC_UseWasapi == 1) // on Vista or Win7
-
     {
-    	SPC_finddefaultdevice(name);
-    	audio_device = SPC_findloopbackdevice_byname(name);
-
+        if (initialised == 0) // only print this out first time round
         for (i = 0; BASS_WASAPI_GetDeviceInfo(i, &info); i++)
         {
-           /* if ((info.flags & BASS_DEVICE_INPUT)                                              // device is an loopback device (not input)
-                && (info.flags & BASS_DEVICE_LOOPBACK) && (info.flags & BASS_DEVICE_ENABLED)) // and it is enabled
-            {
-                if (audio_device == 0)
-                    audio_device = i;
-            }*/
-
             sprintf(str, "entry=%d, type=%lu, mixfreq=%lu, mixchans=%lu, flags=%lu, name=%s",
                     i, info.type, info.mixfreq, info.mixchans, info.flags, info.name);
 
@@ -363,7 +353,6 @@ extern int __stdcall SPC_init()
                 strcat(str, "[Input]");
             if (info.flags & BASS_DEVICE_LOOPBACK)
                 strcat(str, "[Loopback]");
-
             if (info.type == BASS_WASAPI_TYPE_NETWORKDEVICE)
                 strcat(str, " [BASS_WASAPI_TYPE_NETWORKDEVICE]");
             if (info.type == BASS_WASAPI_TYPE_SPEAKERS)
@@ -389,17 +378,24 @@ extern int __stdcall SPC_init()
 
             SPC_log("SPC_init", str);
         }
-        if (SPC_Global_AudioDevice != 0)
+
+        if ((SPC_finddefaultdevice(name) == -1) && (SPC_Global_AudioDevice == 0))
+           return -1;
+        else if (SPC_Global_AudioDevice != 0)
             audio_device = SPC_Global_AudioDevice;
-        sprintf(str, "Chosen audio device is %d", audio_device);
-        SPC_log("SPC_init", str);
+        else
+            audio_device = SPC_findloopbackdevice_byname(name);
 
         BASS_WASAPI_GetDeviceInfo(audio_device, &info);
+        sprintf(str, "Chosen audio device is %d %s", audio_device, info.name );
+
+        SPC_log("SPC_init", str);
+
         // initialize BASS 'no sound' device to allow double buffering
         if (!BASS_Init(0, 44100, 0, 0, NULL))
         {
             Error("SPC_init", "Can't initialize no sound device");
-            return 0;
+            return -1;
         }
         // initialise our recording device at 44100hz stereo
         if (!BASS_WASAPI_Init(audio_device, info.mixfreq, info.mixchans,
@@ -407,7 +403,7 @@ extern int __stdcall SPC_init()
                               0.5, 0, &SPC_DummyRoutine, NULL))
         {
             Error("SPC_init", "Can't initialize chosen audio device");
-            return 0;
+            return -1;
         }
         // Initialise the main device too since this prevents buzzing
         BASS_WASAPI_Init(audio_device - 1, 0, 0, 0, 0.5, 0, NULL, NULL); // initialize corresponding output device
@@ -416,7 +412,7 @@ extern int __stdcall SPC_init()
         if (!(BASS_WASAPI_Start()))
         {
             Error("SPC_init", "Can't start recording");
-            return 0;
+            return -1;
         }
     }
     else // on XP or earlier
@@ -455,25 +451,25 @@ extern int __stdcall SPC_init()
         if (!BASS_RecordInit(SPC_Global_AudioDevice))
         {
             Error("SPC_init", "Can't initialize chosen audio device");
-            return 0;
+            return -1;
         }
         if (!BASS_RecordSetDevice(SPC_Global_AudioDevice))
         {
             Error("SPC_init", "Can't Set Device");
-            return 0;
+            return -1;
         }
         for (i = 0; BASS_RecordSetInput(i, BASS_INPUT_OFF, -1); i++)
             ; // 1st disable all inputs, then...
         if (!BASS_RecordSetInput(SPC_Global_AudioInput, BASS_INPUT_ON, 1))
         {
             Error("SPC_init", "Can't Set Input");
-            return 0;
+            return -1;
         }
         SPC_chan = BASS_RecordStart(44100, 2, 0, &SPC_DuffRecording, 0); // start recording (44100hz mono 16-bit) 200msecs between calls
         if (!SPC_chan)
         {
             Error("SPC_init", "Can't start recording");
-            return 0;
+            return -1;
         }
     }
 

@@ -22,7 +22,7 @@ char const *custdef[9] = {"0,0,0,0,0,0,0,0", "0,0,0,0,0,0,0,31", "0,0,0,0,0,0,31
 // change to using actual custom char positions 1,2,3,4,5,6,7,8 don't work as well with smartie's display and desktop display
 int custchar[9] = {0, 176, 158, 131, 132, 133, 134, 135, 136};
 
-static int initialised = 0; // Flag to avoid duplicate calls to the init routine
+int initialised = 0; // Flag to avoid duplicate calls to the init routine
 static int spectrum_smooth = 1;
 #define MAX_SMOOTH 10
 #define MAX_SPEC 256
@@ -44,6 +44,11 @@ extern "C" DLLEXPORT void __stdcall SmartieInit()
         SPC_log_open();
         SPC_read_cfg(1);
         initialised = SPC_init();
+        if (initialised < 0)
+        {
+          SPC_log("No device to init", 0);
+          return;
+        }
 
         // have to do this again here so we can switch devices should the default change
         defaultdevindex = SPC_finddefaultdevice(name);
@@ -104,7 +109,14 @@ extern "C" DLLEXPORT char const *__stdcall function1(char *param1, char *param2)
 	{
 		defaultdevindex = SPC_finddefaultdevice(name);
 		SPC_close();
-		SPC_init();
+		if (defaultdevindex == -1)
+            return "";
+
+		if (SPC_init() < 0)
+        {
+            SPC_log("Cant init audio device: ", name);
+            return "";
+		}
 	}
 
     // Parse the parameters

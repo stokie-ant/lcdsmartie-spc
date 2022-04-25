@@ -42,5 +42,5 @@ extern float MinScale;
 extern float UpFactor;
 extern float DownFactor;
 extern int ScaleBar;
-
+extern int initialised;
 extern int SPC_imin, SPC_imax, SPC_fmin, SPC_fmax, SPC_icount, SPC_fcount;
